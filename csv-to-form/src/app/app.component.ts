@@ -35,6 +35,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   //   {column: 2, label: 'fee'}
   // ];
   public dataTranslationTable: { column: number, hasLabel: string }[] = [];
+  public insertText: string = '';
 
   constructor(private fb: FormBuilder) {
     this.form = new FormGroup({
@@ -54,6 +55,16 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+  }
+
+  createInsertQueryText(data: any[]) {
+    let result = '';
+    console.log('Creating Insert Query Text');
+    console.log(data);
+    Object.entries(data).forEach(([k, v]) => {
+      result += 'INSERT INTO patients (' + k + ') VALUES (' + v + ') WHERE 1=1;\n';
+    });
+    this.insertText = result;
   }
 
   showChange(filesUploaded: FileList) {
@@ -100,17 +111,18 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
     return foundCol ? row[foundCol.column] : '';
   }
 
-  protected templateGetLabelForSlot(i: number) {
-    return this.template.find((t) => t.column === i).label;
-  }
-
   public submitted($event: Event) {
     this.showResult = this.inputForm.value.list;
     this.formDataSaved.emit(this.inputForm.value.list);
+    this.createInsertQueryText(this.inputForm.value.list);
   }
 
   public formUpdated() {
     this.formDataUpdated.emit(this.inputForm.value.list);
+  }
+
+  protected templateGetLabelForSlot(i: number) {
+    return this.template.find((t) => t.column === i).label;
   }
 
   private cleanOutput(output: string[][]): string[][] {

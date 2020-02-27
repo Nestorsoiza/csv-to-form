@@ -1,5 +1,9 @@
+<textarea>
 {{showResult | json}}
-
+</textarea>
+<textarea>
+{{insertText | json}}
+</textarea>
 <form (ngSubmit)="submitted($event)" [formGroup]="form">
   <label for="fileUp">
     <input #fileUp (change)="showChange($event.target.files)" id="fileUp" name="fileUp" type="file">
