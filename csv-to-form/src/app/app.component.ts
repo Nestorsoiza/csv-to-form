@@ -29,6 +29,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
   @Output() formDataSaved: EventEmitter<any> = new EventEmitter<any>();
   @Output() formDataUpdated: EventEmitter<any> = new EventEmitter<any>();
   @Output() csvReadEvent: EventEmitter<any> = new EventEmitter<any>();
+  public access: string;
   // [
   //   {column: 0, label: 'cpt'},
   //   {column: 1, label: 'moredata'},
@@ -59,12 +60,28 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   createInsertQueryText(data: any[]) {
     let result = '';
+    let built = false;
     console.log('Creating Insert Query Text');
     console.log(data);
-    Object.entries(data).forEach(([k, v]) => {
-      result += 'INSERT INTO patients (' + k + ') VALUES (' + v + ') WHERE 1=1;\n';
+    data.forEach(datum => {
+      let kphrase = '';
+      let vphrase = '(';
+      console.log(datum);
+      Object.entries(datum).forEach(([k, v]: [string, string]) => {
+        kphrase += "`" + k + "`" + ', ';
+        vphrase += "'" + v.replace("'", "''") + "'" + ', ';
+      });
+      kphrase += "`" + 'access' + "`" + ', ';
+      vphrase += "'" + this.access + "'";
+      if (!built) {
+        result += 'INSERT INTO patients_imported (' + kphrase.slice(0, kphrase.length - 2) + ') VALUES\n';
+        built = true;
+      }
+      result += vphrase + '), \n';
     });
     this.insertText = result;
+    this.copyMessage(result);
+    console.warn('Inset queries copied to clipboard');
   }
 
   showChange(filesUploaded: FileList) {
@@ -119,6 +136,24 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public formUpdated() {
     this.formDataUpdated.emit(this.inputForm.value.list);
+  }
+
+  copyMessage(val: string) {
+    let selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = val;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+  }
+
+  accessChanged($event: Event) {
+    console.log(this.access);
   }
 
   protected templateGetLabelForSlot(i: number) {
